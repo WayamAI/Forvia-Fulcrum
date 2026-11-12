@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fulcrum, UX mock for FORVIA Purchasing
 
-## Getting Started
+A clickable, hostable UX mock of Fulcrum, a sales intelligence tool for FORVIA buyers. It walks one supplier negotiation from sign in to agreed and logged. Nothing here is real or connected to a backend: every screen, figure and button is part of a guided flow.
 
-First, run the development server:
+Built with Next.js (App Router, TypeScript), Inter Tight via `next/font`, and Lucide icons. Designs come from the Paper file "Forvia Fulcrum · Sales intelligence UX mock".
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Production check:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build        # static export into ./out
+npm run start -- -p 3077   # serves ./out on http://localhost:3077
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`next start` does not run with `output: 'export'`, so `npm run start` uses a small static server (`scripts/serve.mjs`).
 
-## Learn More
+## Deploy
 
-To learn more about Next.js, take a look at the following resources:
+The whole app is one static page, so `next.config.ts` uses `output: 'export'`. `npm run build` writes the site to `out/`; any static host works.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Vercel**: import the repo, framework preset Next.js, no settings needed. Vercel detects the static export.
+- **Azure Static Web Apps**: app location `/`, output location `out`, build command `npm run build`.
+- **Azure App Service (or any web server)**: build locally or in CI and upload the contents of `out/` (for example with `az webapp deploy` as a static site, or behind IIS or nginx). No Node runtime is needed at run time.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Query strings such as `?step=5` are read in the browser, so shared links work on any static host.
 
-## Deploy on Vercel
+## The tour
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The URL holds the step: `/?step=1` to `/?step=10`. Keyboard: Right arrow or Enter moves forward, Left arrow goes back. A small control at the bottom centre shows the step and restarts the tour. The Pivot dock explains each step; click it to skip the typing. The control Pivot names is the one with a soft pulsing blue ring.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Step | Screen | What happens |
+| --- | --- | --- |
+| 1 | Sign in | Click Sign in or Continue with FORVIA SSO. |
+| 2 | Home | Click Build the full picture (either button). |
+| 3 | Building the picture | Fourteen sources are read over about four seconds; Pivot goes from thinking to explaining and the brief is ready. |
+| 4 | Supplier brief | The relationship on one page, linked to two indices. |
+| 5 | Claim check | Bars grow, the 3.1 point gap fades in, Pivot finds something. |
+| 6 | Call notes | Transcript and structure, recorded with consent. |
+| 7 | Options | Three counters priced on total cost. |
+| 8 | Decide | Click Approve; it turns green for a moment, then moves on. |
+| 9 | Counter-proposal | Click Send from Outlook; a Sending and Sent toast, then moves on. |
+| 10 | Agreed and logged | Confetti once, Pivot celebrating. Restart tour returns to step 1. |
+
+## Layout
+
+- 1200px and wider: the Paper layout.
+- 768 to 1199px: the sidebar collapses to a 64px icon rail, cards wrap to two columns, the Pivot dock is narrower.
+- Under 768px: top bar with a menu drawer, single column, Pivot dock becomes a bottom sheet that can collapse to a pill.
+
+Animation respects `prefers-reduced-motion`.
+
+## Project map
+
+- `app/page.tsx`, `components/Journey.tsx`: step state in the URL, keyboard, Approve and Send flows.
+- `components/screens/Screen01SignIn.tsx` to `Screen10Agreed.tsx`: one component per screen.
+- `components/Sidebar.tsx`, `TopBar.tsx`, `PivotDock.tsx`, `AppShell.tsx`: shared chrome.
+- `components/Pivot.tsx`: the assistant, seven moods: hello, thinking, explaining, found, needs, concerned, celebrating.
+- `public/assets/`: clay icons, sign-in hero, FORVIA logo, Outlook mark.
